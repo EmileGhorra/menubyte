@@ -4,8 +4,12 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import { FREE_ITEM_LIMIT } from '@/menuData';
 
 async function getOwnerByCategory(categoryId: string) {
+  if (!supabaseServer) {
+    return null;
+  }
+
   const { data: category } = await supabaseServer
-    ?.from('menu_categories')
+    .from('menu_categories')
     .select('id, restaurant_id')
     .eq('id', categoryId)
     .maybeSingle();
@@ -13,7 +17,7 @@ async function getOwnerByCategory(categoryId: string) {
   if (!category) return null;
 
   const { data: restaurant } = await supabaseServer
-    ?.from('restaurants')
+    .from('restaurants')
     .select('id, owner_id, plan_tier')
     .eq('id', category.restaurant_id)
     .maybeSingle();
@@ -24,8 +28,12 @@ async function getOwnerByCategory(categoryId: string) {
 }
 
 async function getOwnerByItem(itemId: string) {
+  if (!supabaseServer) {
+    return null;
+  }
+
   const { data: item } = await supabaseServer
-    ?.from('menu_items')
+    .from('menu_items')
     .select('id, category_id')
     .eq('id', itemId)
     .maybeSingle();
