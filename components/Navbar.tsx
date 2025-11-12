@@ -21,17 +21,20 @@ export function Navbar({ user }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold text-dark">
           <Image src="/logo.svg" alt="MenuByte" width={32} height={32} />
           MenuByte
         </Link>
-        <div className="flex items-center gap-5">
-          <Link href="/menu" className="text-sm font-medium text-slate-600 hover:text-dark">
+        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+          <Link
+            href="/menu"
+            className="text-sm font-medium text-slate-600 hover:text-dark sm:order-none order-last"
+          >
             Public Menus
           </Link>
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-1 flex-wrap items-center gap-3 sm:flex-none sm:justify-end">
               {!user.hasRestaurant && (
                 <Link
                   href="/onboarding"
