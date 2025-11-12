@@ -46,9 +46,16 @@ const transformCategories = (categories: any[] | null | undefined): MenuCategory
 const transformRestaurant = (row: any): RestaurantMenu => {
   const categories = transformCategories(row.menu_categories);
   const featuredItems = categories
-    .flatMap((category) => category.items.map((item) => ({ ...item, categoryTitle: category.title })))
-    .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
-    .slice(0, 6);
+    .flatMap((category) =>
+      category.items.map((item, index) => ({
+        ...item,
+        categoryTitle: category.title,
+        featuredPosition: item.position ?? index,
+      }))
+    )
+    .sort((a, b) => Number(a.featuredPosition ?? 0) - Number(b.featuredPosition ?? 0))
+    .slice(0, 6)
+    .map(({ featuredPosition, ...item }) => item);
 
   return {
     restaurant: {
