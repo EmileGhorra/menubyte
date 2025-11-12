@@ -20,6 +20,7 @@ export interface MenuItem {
   priceMode: PriceMode;
   unitLabel?: string;
   options?: MenuItemOption[];
+  position?: number;
 }
 
 export interface MenuCategory {
