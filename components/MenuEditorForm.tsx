@@ -1,6 +1,6 @@
 'use client';
 
-import type { MenuCategory, MenuItemOption, PlanTier } from '@/types/menu';
+import type { MenuCategory, MenuItemOption, PlanTier, PriceMode } from '@/types/menu';
 import { useMemo, useRef, useState } from 'react';
 import { InlineSpinner } from './InlineSpinner';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,18 @@ import { EditItemModal } from './EditItemModal';
 import { ImageUploader } from './ImageUploader';
 import { FREE_ITEM_LIMIT } from '@/menuData';
 import { CategoryManager } from './CategoryManager';
+
+type DraftItem = {
+  name: string;
+  description: string;
+  price: number;
+  categoryId: string;
+  imageUrl: string;
+  priceMode: PriceMode;
+  unitLabel: string;
+  isAvailable: boolean;
+  options: MenuItemOption[];
+};
 
 interface Props {
   categories: MenuCategory[];
@@ -18,19 +30,19 @@ interface Props {
 export function MenuEditorForm({ categories, planType, restaurantId }: Props) {
   const router = useRouter();
   const itemNameRef = useRef<HTMLInputElement>(null);
-  const createEmptyDraft = () => ({
+  const createEmptyDraft = (): DraftItem => ({
     name: '',
     description: '',
     price: 0,
     categoryId: categories[0]?.id ?? '',
     imageUrl: '',
-    priceMode: 'fixed' as const,
+    priceMode: 'fixed',
     unitLabel: '',
     isAvailable: true,
     options: [] as MenuItemOption[],
   });
 
-  const [draft, setDraft] = useState(createEmptyDraft);
+  const [draft, setDraft] = useState<DraftItem>(createEmptyDraft);
   const [activeCategory, setActiveCategory] = useState(categories[0]?.id ?? '');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
