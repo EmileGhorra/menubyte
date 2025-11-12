@@ -3,8 +3,12 @@ import { auth } from '@/auth';
 import { supabaseServer } from '@/lib/supabaseServer';
 
 async function verifyOwnership(categoryId: string, userId: string) {
+  if (!supabaseServer) {
+    return { ok: false as const };
+  }
+
   const { data: category } = await supabaseServer
-    ?.from('menu_categories')
+    .from('menu_categories')
     .select('id, restaurant_id')
     .eq('id', categoryId)
     .maybeSingle();
@@ -12,7 +16,7 @@ async function verifyOwnership(categoryId: string, userId: string) {
   if (!category) return { ok: false };
 
   const { data: restaurant } = await supabaseServer
-    ?.from('restaurants')
+    .from('restaurants')
     .select('id, owner_id')
     .eq('id', category.restaurant_id)
     .maybeSingle();
