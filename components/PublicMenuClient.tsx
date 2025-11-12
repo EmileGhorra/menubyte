@@ -102,7 +102,13 @@ export function PublicMenuClient({ restaurant, categories, featuredItems = [], i
         </div>
       ) : (
         displayedCategories.map((category) => (
-          <div key={category.id} ref={(el) => (sectionRefs.current[category.id] = el)} className="space-y-6">
+          <div
+            key={category.id}
+            ref={(el) => {
+              sectionRefs.current[category.id] = el;
+            }}
+            className="space-y-6"
+          >
             <MenuCategoryBlock category={category} />
             {isFreePlan && (
               <div className="rounded-2xl border border-dashed border-amber-300 bg-white/90 p-6 text-center shadow-sm">
