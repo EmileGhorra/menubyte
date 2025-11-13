@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { ensurePlanStatus } from '@/lib/wallet';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? '';
@@ -60,6 +61,8 @@ export const authOptions: NextAuthOptions = {
       }
 
       try {
+        await ensurePlanStatus(token.sub);
+
         const { data } = await supabaseServer
           .from('users')
           .select('id')

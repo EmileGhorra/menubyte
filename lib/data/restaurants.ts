@@ -2,6 +2,7 @@
 import type { MenuCategory, MenuItem, MenuItemOption, PlanTier, RestaurantMenu } from '@/types/menu';
 import { menuData, getRestaurantBySlug as getStaticRestaurant } from '@/menuData';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { ensurePlanStatus } from '@/lib/wallet';
 
 const transformItemOptions = (options: any[] | null | undefined): MenuItemOption[] | undefined => {
   if (!options || options.length === 0) return undefined;
@@ -68,7 +69,7 @@ const transformRestaurant = (row: any): RestaurantMenu => {
       phone: row.phone ?? '',
       plan: (row.plan_tier as PlanTier) ?? 'free',
       qrCodeUrl: row.qr_slug
-        ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte-demo.vercel.app'}/menu/${row.qr_slug}`
+        ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.vercel.app'}/menu/${row.qr_slug}`
         : undefined,
     },
     categories,
@@ -81,10 +82,10 @@ export async function getRestaurantMenuBySlug(slug: string) {
     return getStaticRestaurant(slug) ?? null;
   }
 
-  const { data, error } = await supabaseServer
+  let { data, error } = await supabaseServer
     .from('restaurants')
     .select(
-      `id, name, slug, description, hero_image, address, phone, plan_tier, qr_slug,
+      `id, owner_id, name, slug, description, hero_image, address, phone, plan_tier, qr_slug,
         menu_categories ( id, title, position, menu_items ( id, name, description, base_price, price_mode, unit_label, image_url, is_available, menu_item_options ( id, label, price, unit_label, position ) ) )`
     )
     .eq('slug', slug)
@@ -98,13 +99,32 @@ export async function getRestaurantMenuBySlug(slug: string) {
     return getStaticRestaurant(slug) ?? null;
   }
 
-  return transformRestaurant(data);
+  if (data?.owner_id) {
+    await ensurePlanStatus(data.owner_id);
+
+    const refetch = await supabaseServer
+      .from('restaurants')
+      .select(
+        `id, owner_id, name, slug, description, hero_image, address, phone, plan_tier, qr_slug,
+          menu_categories ( id, title, position, menu_items ( id, name, description, base_price, price_mode, unit_label, image_url, is_available, menu_item_options ( id, label, price, unit_label, position ) ) )`
+      )
+      .eq('slug', slug)
+      .limit(1)
+      .maybeSingle();
+
+    if (refetch.data) {
+      data = refetch.data;
+    }
+  }
+
+  return data ? transformRestaurant(data) : null;
 }
 
 export async function getPrimaryRestaurantForUser(userId?: string) {
   if (!userId || !supabaseServer) {
     return menuData[0];
   }
+  await ensurePlanStatus(userId);
 
   const { data, error } = await supabaseServer
     .from('restaurants')
@@ -156,7 +176,7 @@ export async function getAllRestaurants() {
     phone: row.phone ?? '',
     plan: (row.plan_tier as PlanTier) ?? 'free',
     qrCodeUrl: row.qr_slug
-      ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte-demo.vercel.app'}/menu/${row.qr_slug}`
+      ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.vercel.app'}/menu/${row.qr_slug}`
       : undefined,
   }));
 }

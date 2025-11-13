@@ -9,6 +9,7 @@ create table if not exists users (
   plan_tier text not null default 'free',
   plan_status text not null default 'active',
   stripe_customer_id text,
+  pro_expires_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -79,3 +80,33 @@ create table if not exists qr_codes (
 create index if not exists idx_menu_categories_restaurant on menu_categories(restaurant_id, position);
 create index if not exists idx_menu_items_category on menu_items(category_id, position);
 create index if not exists idx_menu_item_options_item on menu_item_options(item_id, position);
+
+create table if not exists wallets (
+  user_id text primary key references users(id) on delete cascade,
+  balance numeric(12,2) not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists wallet_transactions (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references users(id) on delete cascade,
+  amount numeric(12,2) not null,
+  transaction_type text not null,
+  reference text,
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists upgrade_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references users(id) on delete cascade,
+  display_name text not null,
+  amount numeric(12,2) not null,
+  status text not null default 'pending',
+  status_message text,
+  created_at timestamptz not null default now(),
+  resolved_at timestamptz,
+  unique(user_id, created_at)
+);
+
+create index if not exists idx_upgrade_requests_status on upgrade_requests(status, created_at desc);

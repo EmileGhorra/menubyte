@@ -26,7 +26,7 @@ export const subscriptionPlans: SubscriptionPlan[] = [
   {
     id: 'pro',
     name: 'Pro',
-    pricePerMonth: 39,
+    pricePerMonth: 10,
     features: [
       'Unlimited items',
       'Upload custom images',
