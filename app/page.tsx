@@ -1,8 +1,16 @@
-export default function HomePage() {
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+
+export default async function HomePage() {
+  const session = await auth();
+  if (session?.user?.id) {
+    redirect('/dashboard');
+  }
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-light text-dark">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-light text-dark">
       <h1 className="text-4xl font-semibold">MenuByte</h1>
-      <p className="mt-4 text-lg max-w-lg text-center">
+      <p className="mt-4 max-w-lg text-center text-lg">
         Your all-in-one platform to create, edit, and share QR menus for your restaurant.
       </p>
       <a

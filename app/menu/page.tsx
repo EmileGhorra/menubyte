@@ -5,9 +5,15 @@ import { getAllRestaurants, getPrimaryRestaurantForUser } from '@/lib/data/resta
 import { auth } from '@/auth';
 
 export default async function MenuIndexPage() {
-  const [session, restaurants] = await Promise.all([auth(), getAllRestaurants()]);
+  const session = await auth();
 
-  if (session?.user?.id) {
+  if (!session?.user?.id) {
+    redirect('/login?callbackUrl=/menu');
+  }
+
+  const restaurants = await getAllRestaurants();
+
+  if (session.user.id) {
     const ownerRestaurant = await getPrimaryRestaurantForUser(session.user.id);
     if (ownerRestaurant) {
       redirect(`/menu/${ownerRestaurant.restaurant.slug}`);
