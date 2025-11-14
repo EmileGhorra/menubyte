@@ -20,18 +20,18 @@ export default async function PublicMenuPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-light">
-      <div className="relative h-64 w-full">
+      <div className="relative h-64 w-full overflow-hidden">
         {restaurant.heroImage ? (
           <Image
             src={restaurant.heroImage}
-            alt={restaurant.name}
+            alt={`${restaurant.name} hero`}
             fill
             className="object-cover"
             sizes="100vw"
-            priority
+            priority={false}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-dark to-dark/70" />
+          <div className="absolute inset-0 bg-gradient-to-br from-dark to-dark/70" aria-hidden="true" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/40" />
         <div className="absolute inset-x-0 bottom-6 mx-auto max-w-5xl px-4 text-white">
