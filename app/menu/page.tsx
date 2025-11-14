@@ -16,7 +16,7 @@ export default async function MenuIndexPage() {
   if (session.user.id) {
     const ownerRestaurant = await getPrimaryRestaurantForUser(session.user.id);
     if (ownerRestaurant) {
-      redirect(`/menu/${ownerRestaurant.restaurant.slug}`);
+      redirect(`/menus/${ownerRestaurant.restaurant.slug}`);
     }
   }
   return (
@@ -31,7 +31,7 @@ export default async function MenuIndexPage() {
           {restaurants.map((restaurant) => (
             <Link
               key={restaurant.id}
-              href={`/menu/${restaurant.slug}`}
+              href={`/menus/${restaurant.slug}`}
               className="group flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm"
             >
               {restaurant.heroImage ? (

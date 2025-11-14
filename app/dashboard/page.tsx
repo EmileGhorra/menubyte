@@ -26,9 +26,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-light">
-      <Navbar user={session.user} />
+      <Navbar user={session.user} publicMenuHref={`/menus/${currentRestaurant.restaurant.slug}`} />
       <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[220px_1fr]">
-        <Sidebar />
+        <Sidebar publicMenuHref={`/menus/${currentRestaurant.restaurant.slug}`} />
         <div className="space-y-6">
           <Header
             title={`Welcome back, ${firstName}`}

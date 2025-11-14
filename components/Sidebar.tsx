@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
-const links = [
+const baseLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/menu-editor', label: 'Menu Editor' },
   { href: '/dashboard/settings', label: 'Restaurant Settings' },
@@ -12,7 +12,11 @@ const links = [
   { href: '/billing', label: 'Billing' },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  publicMenuHref?: string;
+}
+
+export function Sidebar({ publicMenuHref }: SidebarProps = {}) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -31,12 +35,13 @@ export function Sidebar() {
       >
         <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">Manage</p>
         <nav className="flex flex-1 flex-col gap-1">
-          {links.map((link) => {
-            const isActive = pathname === link.href;
+          {baseLinks.map((link) => {
+            const targetHref = link.href === '/menu' && publicMenuHref ? publicMenuHref : link.href;
+            const isActive = pathname === targetHref;
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={targetHref}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition hover:bg-primary/10 ${isActive ? 'bg-primary text-white' : 'text-slate-600'
                   }`}
                 onClick={() => setIsOpen(false)}

@@ -86,7 +86,7 @@ export function RestaurantSettingsForm({ restaurant }: Props) {
             fieldErrors.slug ? 'border-rose-400 ring-1 ring-rose-400/40' : 'border-slate-200'
           }`}
         >
-          <span className="text-sm text-slate-500">/menu/</span>
+          <span className="text-sm text-slate-500">/menus/</span>
           <input
             type="text"
             className="ml-2 flex-1 border-none bg-transparent text-sm text-dark focus:outline-none"
@@ -99,7 +99,7 @@ export function RestaurantSettingsForm({ restaurant }: Props) {
           />
         </div>
         <p className="mt-1 text-xs text-slate-400">
-          Example: <span className="font-mono text-slate-500">/menu/{form.slug || 'your-slug'}</span>. QR codes update automatically after saving.
+          Example: <span className="font-mono text-slate-500">/menus/{form.slug || 'your-slug'}</span>. QR codes update automatically after saving.
         </p>
         {fieldErrors.slug && <p className="text-xs text-rose-600">{fieldErrors.slug}</p>}
       </div>

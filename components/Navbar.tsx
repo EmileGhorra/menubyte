@@ -8,9 +8,11 @@ type NavbarUser = Pick<NonNullable<Session['user']>, 'name' | 'email' | 'image'>
 
 interface NavbarProps {
   user?: (NavbarUser & { hasRestaurant?: boolean }) | null;
+  publicMenuHref?: string;
 }
 
-export function Navbar({ user }: NavbarProps) {
+export function Navbar({ user, publicMenuHref }: NavbarProps) {
+  const publicMenuLink = publicMenuHref ?? '/menu';
   const initials =
     user?.name
       ?.split(' ')
@@ -28,7 +30,7 @@ export function Navbar({ user }: NavbarProps) {
         </Link>
         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
           <Link
-            href="/menu"
+            href={publicMenuLink}
             className="text-sm font-medium text-slate-600 hover:text-dark sm:order-none order-last"
           >
             Public Menus
