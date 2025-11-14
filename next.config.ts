@@ -23,6 +23,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'www.pexels.com',
       },
+      ...(process.env.NEXT_PUBLIC_SUPABASE_URL
+        ? [
+            {
+              protocol: 'https',
+              hostname: process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/^https?:\/\//, ''),
+            },
+          ]
+        : []),
     ],
   },
 };
