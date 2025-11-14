@@ -9,6 +9,8 @@ interface Props {
   children?: React.ReactNode;
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
 export function UploadButton({ onUpload, disabled, children }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -23,6 +25,11 @@ export function UploadButton({ onUpload, disabled, children }: Props) {
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (file.size > MAX_FILE_SIZE) {
+      setError('Please upload an image smaller than 5 MB.');
+      event.target.value = '';
+      return;
+    }
     setIsUploading(true);
     setError('');
 
@@ -64,6 +71,7 @@ export function UploadButton({ onUpload, disabled, children }: Props) {
         className="hidden"
         onChange={handleChange}
       />
+      <p className="text-xs text-slate-500">JPG, PNG, WebP up to 5 MB.</p>
       {isUploading && <InlineSpinner label="Uploading" />}
       {error && <p className="text-xs text-rose-600">{error}</p>}
     </div>
