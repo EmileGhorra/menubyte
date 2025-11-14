@@ -8,7 +8,7 @@ import type {
   SubscriptionPlan,
 } from './types/menu';
 
-export const FREE_ITEM_LIMIT = 50;
+export const FREE_ITEM_LIMIT = 20;
 
 export const subscriptionPlans: SubscriptionPlan[] = [
   {
@@ -16,7 +16,7 @@ export const subscriptionPlans: SubscriptionPlan[] = [
     name: 'Free',
     pricePerMonth: 0,
     features: [
-      'Up to 50 items',
+      'Up to 20 items',
       'MenuByte ads on your menu page',
       'Email support',
       'No image uploads',

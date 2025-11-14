@@ -1,6 +1,6 @@
 // NOTE: Fallback to static menuData whenever Supabase is unavailable so onboarding remains usable offline.
 import type { MenuCategory, MenuItem, MenuItemOption, PlanTier, RestaurantMenu } from '@/types/menu';
-import { menuData, getRestaurantBySlug as getStaticRestaurant } from '@/menuData';
+import { menuData, getRestaurantBySlug as getStaticRestaurant, FREE_ITEM_LIMIT } from '@/menuData';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { ensurePlanStatus } from '@/lib/wallet';
 
@@ -44,9 +44,8 @@ const transformCategories = (categories: any[] | null | undefined): MenuCategory
     }));
 };
 
-const transformRestaurant = (row: any, options?: { fallback?: boolean }) => {
-  const categories = transformCategories(row.menu_categories);
-  const featuredItems = categories
+const buildFeaturedItems = (categories: MenuCategory[]) =>
+  categories
     .flatMap((category) =>
       category.items.map((item, index) => ({
         ...item,
@@ -58,6 +57,30 @@ const transformRestaurant = (row: any, options?: { fallback?: boolean }) => {
     .slice(0, 6)
     .map(({ featuredPosition, ...item }) => item);
 
+const trimCategoriesForFreePlan = (categories: MenuCategory[]) => {
+  let remaining = FREE_ITEM_LIMIT;
+  if (remaining <= 0) return [];
+
+  const next: MenuCategory[] = [];
+  for (const category of categories) {
+    if (remaining <= 0) break;
+    const allowedItems = category.items.slice(0, remaining);
+    if (allowedItems.length === 0) continue;
+    next.push({
+      ...category,
+      items: allowedItems,
+    });
+    remaining -= allowedItems.length;
+  }
+  return next;
+};
+
+const transformRestaurant = (row: any, options?: { fallback?: boolean }) => {
+  const rawCategories = transformCategories(row.menu_categories);
+  const planTier = (row.plan_tier as PlanTier) ?? 'free';
+  const categories = planTier === 'free' ? trimCategoriesForFreePlan(rawCategories) : rawCategories;
+  const featuredItems = buildFeaturedItems(categories);
+
   return {
     restaurant: {
       id: row.id,
@@ -67,7 +90,7 @@ const transformRestaurant = (row: any, options?: { fallback?: boolean }) => {
       description: row.description ?? '',
       address: row.address ?? '',
       phone: row.phone ?? '',
-      plan: (row.plan_tier as PlanTier) ?? 'free',
+      plan: planTier,
       qrCodeUrl: row.qr_slug
         ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.vercel.app'}/menu/${row.qr_slug}`
         : undefined,
@@ -80,7 +103,15 @@ const transformRestaurant = (row: any, options?: { fallback?: boolean }) => {
 
 const getFallbackRestaurantMenu = (slug: string) => {
   const fallback = getStaticRestaurant(slug);
-  return fallback ? { ...fallback, isFallback: true as const } : null;
+  if (!fallback) return null;
+  const planTier = fallback.restaurant.plan ?? 'free';
+  const categories = planTier === 'free' ? trimCategoriesForFreePlan(fallback.categories) : fallback.categories;
+  return {
+    ...fallback,
+    categories,
+    featuredItems: buildFeaturedItems(categories),
+    isFallback: true as const,
+  };
 };
 
 export async function getRestaurantMenuBySlug(slug: string) {
