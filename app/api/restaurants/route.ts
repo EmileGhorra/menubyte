@@ -94,7 +94,20 @@ export async function PATCH(request: Request) {
     hero_image: body.heroImage ?? undefined,
     address: body.address ?? undefined,
     phone: body.phone ?? undefined,
+    slug: body.slug ? slugify(body.slug) : undefined,
   };
+
+  if (updatePayload.slug) {
+    const { data: slugOwner } = await supabaseServer
+      .from('restaurants')
+      .select('id')
+      .eq('slug', updatePayload.slug)
+      .neq('id', restaurantId)
+      .maybeSingle();
+    if (slugOwner) {
+      return NextResponse.json({ error: 'Slug already in use. Please pick another one.' }, { status: 409 });
+    }
+  }
 
   const { error: updateError } = await supabaseServer
     .from('restaurants')

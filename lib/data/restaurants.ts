@@ -44,7 +44,7 @@ const transformCategories = (categories: any[] | null | undefined): MenuCategory
     }));
 };
 
-const transformRestaurant = (row: any): RestaurantMenu => {
+const transformRestaurant = (row: any, options?: { fallback?: boolean }) => {
   const categories = transformCategories(row.menu_categories);
   const featuredItems = categories
     .flatMap((category) =>
@@ -74,7 +74,13 @@ const transformRestaurant = (row: any): RestaurantMenu => {
     },
     categories,
     featuredItems,
+    isFallback: options?.fallback ? true : undefined,
   };
+};
+
+const getFallbackRestaurantMenu = (slug: string) => {
+  const fallback = getStaticRestaurant(slug);
+  return fallback ? { ...fallback, isFallback: true as const } : null;
 };
 
 export async function getRestaurantMenuBySlug(slug: string) {
@@ -96,7 +102,7 @@ export async function getRestaurantMenuBySlug(slug: string) {
     if (error) {
       console.warn('[supabase] getRestaurantMenuBySlug fallback', error.message);
     }
-    return getStaticRestaurant(slug) ?? null;
+    return getFallbackRestaurantMenu(slug);
   }
 
   if (data?.owner_id) {
@@ -112,12 +118,17 @@ export async function getRestaurantMenuBySlug(slug: string) {
       .limit(1)
       .maybeSingle();
 
+    if (refetch.error) {
+      console.warn('[supabase] getRestaurantMenuBySlug refetch fallback', refetch.error.message);
+    }
     if (refetch.data) {
       data = refetch.data;
+    } else {
+      return getFallbackRestaurantMenu(slug);
     }
   }
 
-  return data ? transformRestaurant(data) : null;
+  return data ? transformRestaurant(data) : getFallbackRestaurantMenu(slug);
 }
 
 export async function getPrimaryRestaurantForUser(userId?: string) {
@@ -139,11 +150,11 @@ export async function getPrimaryRestaurantForUser(userId?: string) {
 
   if (error) {
     console.warn('[supabase] getPrimaryRestaurantForUser fallback', error.message);
-    return menuData[0];
+    return { ...menuData[0], isFallback: true };
   }
 
   if (!data) {
-    return null;
+    return { ...menuData[0], isFallback: true };
   }
 
   return transformRestaurant(data);

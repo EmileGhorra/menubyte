@@ -87,6 +87,15 @@ export async function POST(request: Request) {
     }
   }
 
+  const { data: lastItem } = await supabaseServer
+    .from('menu_items')
+    .select('position')
+    .eq('category_id', categoryId)
+    .order('position', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const nextPosition = (lastItem?.position ?? -1) + 1;
+
   const { data: item, error: insertError } = await supabaseServer
     .from('menu_items')
     .insert({
@@ -98,6 +107,7 @@ export async function POST(request: Request) {
       unit_label: unitLabel ?? null,
       image_url: imageUrl ?? null,
       is_available: isAvailable ?? true,
+      position: nextPosition,
     })
     .select('id')
     .single();
@@ -134,7 +144,53 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { itemId, name, description, price, priceMode, unitLabel, imageUrl, isAvailable, categoryId, options } = body;
+  const { itemId, name, description, price, priceMode, unitLabel, imageUrl, isAvailable, categoryId, options, positions } = body;
+
+  if (Array.isArray(positions) && positions.length > 0) {
+    const ids = positions.map((entry: { id: string }) => entry.id);
+    const { data: items, error: itemsError } = await supabaseServer
+      .from('menu_items')
+      .select('id, category_id')
+      .in('id', ids);
+
+    if (itemsError || !items || items.length === 0) {
+      return NextResponse.json({ error: 'Menu items not found' }, { status: 404 });
+    }
+
+    const categoryIds = Array.from(new Set(items.map((item) => item.category_id)));
+    const { data: categories, error: categoriesError } = await supabaseServer
+      .from('menu_categories')
+      .select('id, restaurant_id')
+      .in('id', categoryIds);
+
+    if (categoriesError || !categories || categories.length === 0) {
+      return NextResponse.json({ error: 'Categories not found' }, { status: 404 });
+    }
+
+    const restaurantIds = Array.from(new Set(categories.map((category) => category.restaurant_id)));
+    const { data: restaurants } = await supabaseServer
+      .from('restaurants')
+      .select('id, owner_id')
+      .in('id', restaurantIds);
+
+    if (!restaurants || restaurants.some((restaurant) => restaurant.owner_id !== session.user.id)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    for (const entry of positions as { id: string; position: number }[]) {
+      const { error: updateError } = await supabaseServer
+        .from('menu_items')
+        .update({ position: entry.position })
+        .eq('id', entry.id);
+
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  }
+
   if (!itemId) {
     return NextResponse.json({ error: 'Missing item id' }, { status: 400 });
   }
@@ -148,11 +204,20 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  let nextCategoryPosition: number | undefined;
   if (categoryId && categoryId !== context.category.id) {
     const targetContext = await getOwnerByCategory(categoryId);
     if (!targetContext || targetContext.restaurant.owner_id !== session.user.id) {
       return NextResponse.json({ error: 'Cannot move item to that category' }, { status: 403 });
     }
+    const { data: lastItem } = await supabaseServer
+      .from('menu_items')
+      .select('position')
+      .eq('category_id', categoryId)
+      .order('position', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    nextCategoryPosition = (lastItem?.position ?? -1) + 1;
   }
 
   const updatePayload: Record<string, unknown> = {};
@@ -163,7 +228,12 @@ export async function PATCH(request: Request) {
   if (unitLabel !== undefined) updatePayload.unit_label = unitLabel;
   if (imageUrl !== undefined) updatePayload.image_url = imageUrl;
   if (isAvailable !== undefined) updatePayload.is_available = isAvailable;
-  if (categoryId !== undefined) updatePayload.category_id = categoryId;
+  if (categoryId !== undefined) {
+    updatePayload.category_id = categoryId;
+    if (nextCategoryPosition !== undefined) {
+      updatePayload.position = nextCategoryPosition;
+    }
+  }
 
   const { error } = await supabaseServer.from('menu_items').update(updatePayload).eq('id', itemId);
   if (error) {

@@ -27,7 +27,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-light">
       <Navbar user={session.user} />
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[220px_1fr]">
+      <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[220px_1fr]">
         <Sidebar />
         <div className="space-y-6">
           <Header

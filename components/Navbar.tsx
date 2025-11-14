@@ -21,7 +21,7 @@ export function Navbar({ user }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold text-dark">
           <Image src="/logo.svg" alt="MenuByte" width={32} height={32} />
           MenuByte

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { InlineSpinner } from './InlineSpinner';
 import type { RestaurantProfile } from '@/types/menu';
 import { UploadButton } from './UploadButton';
+import { slugify } from '@/lib/utils/slugify';
 
 interface Props {
   restaurant: RestaurantProfile;
@@ -21,6 +22,8 @@ export function RestaurantSettingsForm({ restaurant }: Props) {
   });
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ slug?: string }>({});
+  const slugInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (field: keyof typeof form) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -32,6 +35,7 @@ export function RestaurantSettingsForm({ restaurant }: Props) {
     event.preventDefault();
     setStatus('saving');
     setError('');
+    setFieldErrors({});
 
     const response = await fetch('/api/restaurants', {
       method: 'PATCH',
@@ -43,12 +47,18 @@ export function RestaurantSettingsForm({ restaurant }: Props) {
         heroImage: form.heroImage,
         address: form.address,
         phone: form.phone,
+        slug: slugify(form.slug),
       }),
     });
 
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
-      setError(data.error ?? 'Unable to update restaurant');
+      if (response.status === 409) {
+        setFieldErrors({ slug: data.error ?? 'Slug already exists. Choose another one.' });
+        slugInputRef.current?.focus();
+      } else {
+        setError(data.error ?? 'Unable to update restaurant');
+      }
       setStatus('error');
       return;
     }
@@ -71,13 +81,27 @@ export function RestaurantSettingsForm({ restaurant }: Props) {
       </div>
       <div>
         <label className="text-sm font-medium text-slate-700">Slug</label>
-        <input
-          type="text"
-          className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-slate-500"
-          value={form.slug}
-          disabled
-        />
-        <p className="mt-1 text-xs text-slate-400">Slug is locked after publishing so existing QR codes stay valid.</p>
+        <div
+          className={`mt-2 flex items-center rounded-2xl border bg-white px-3 py-2 ${
+            fieldErrors.slug ? 'border-rose-400 ring-1 ring-rose-400/40' : 'border-slate-200'
+          }`}
+        >
+          <span className="text-sm text-slate-500">/menu/</span>
+          <input
+            type="text"
+            className="ml-2 flex-1 border-none bg-transparent text-sm text-dark focus:outline-none"
+            value={form.slug}
+            onChange={handleChange('slug')}
+            pattern="^[a-z0-9-]+$"
+            title="Use lowercase letters, numbers, or dashes."
+            required
+            ref={slugInputRef}
+          />
+        </div>
+        <p className="mt-1 text-xs text-slate-400">
+          Example: <span className="font-mono text-slate-500">/menu/{form.slug || 'your-slug'}</span>. QR codes update automatically after saving.
+        </p>
+        {fieldErrors.slug && <p className="text-xs text-rose-600">{fieldErrors.slug}</p>}
       </div>
       <div>
         <label className="text-sm font-medium text-slate-700">Description</label>

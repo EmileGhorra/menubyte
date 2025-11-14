@@ -15,7 +15,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
     notFound();
   }
 
-  const { restaurant, categories, featuredItems } = restaurantEntry;
+  const { restaurant, categories, featuredItems, isFallback } = restaurantEntry;
   const isFreePlan = restaurant.plan === 'free';
 
   return (
@@ -47,6 +47,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
           categories={categories}
           featuredItems={featuredItems}
           isFreePlan={isFreePlan}
+          isFallback={Boolean(isFallback)}
         />
         <div className="space-y-4 lg:w-80">
           {isFreePlan && (
@@ -59,6 +60,15 @@ export default async function PublicMenuPage({ params }: PageProps) {
             <p className="font-semibold text-dark">Questions?</p>
             <p>{restaurant.phone}</p>
           </div>
+          {isFallback && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+              <p className="font-semibold">Live menu updating</p>
+              <p>
+                This QR is temporarily showing our sample menu while the owner finishes setup. Please contact the
+                restaurant for the latest offerings.
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>

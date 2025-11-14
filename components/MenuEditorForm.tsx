@@ -1,7 +1,8 @@
 'use client';
 
+import type { DragEvent } from 'react';
 import type { MenuCategory, MenuItemOption, PlanTier, PriceMode } from '@/types/menu';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { InlineSpinner } from './InlineSpinner';
 import { useRouter } from 'next/navigation';
 import { EditItemModal } from './EditItemModal';
@@ -48,14 +49,27 @@ export function MenuEditorForm({ categories, planType, restaurantId }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; price?: string; options?: string }>({});
   const totalItems = categories.reduce((count, category) => count + category.items.length, 0);
   const reachedFreeLimit = planType === 'free' && totalItems >= FREE_ITEM_LIMIT;
   const canUploadImages = planType === 'pro';
   const isVariablePricing = draft.priceMode !== 'fixed';
+  const [orderedItems, setOrderedItems] = useState<MenuCategory['items'][number][]>(
+    () => categories.find((category) => category.id === activeCategory)?.items ?? categories[0]?.items ?? []
+  );
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  const [itemReorderSaving, setItemReorderSaving] = useState(false);
+  const [itemReorderError, setItemReorderError] = useState('');
+  const priceInputRef = useRef<HTMLInputElement>(null);
 
   const selectedCategoryLabel = useMemo(() => {
     return categories.find((category) => category.id === draft.categoryId)?.title ?? 'Uncategorized';
   }, [categories, draft.categoryId]);
+
+  useEffect(() => {
+    const activeItems = categories.find((category) => category.id === activeCategory)?.items ?? [];
+    setOrderedItems(activeItems);
+  }, [categories, activeCategory]);
 
 
 const addOption = () => {
@@ -73,6 +87,7 @@ const addOption = () => {
         },
       ],
     }));
+    setFieldErrors((prev) => ({ ...prev, options: undefined }));
 };
 
 const updateOption = (optionId: string, index: number, field: 'label' | 'price' | 'unitLabel', value: string) => {
@@ -114,59 +129,158 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
   };
 
   const [availabilityUpdating, setAvailabilityUpdating] = useState<string | null>(null);
+  const handleItemDragStart = (id: string) => {
+    setDraggedItemId(id);
+  };
+
+  const handleItemDragOver = (event: DragEvent<HTMLDivElement>, overId: string) => {
+    event.preventDefault();
+    if (!draggedItemId || draggedItemId === overId) {
+      return;
+    }
+    setOrderedItems((prev) => {
+      const next = [...prev];
+      const fromIndex = next.findIndex((item) => item.id === draggedItemId);
+      const toIndex = next.findIndex((item) => item.id === overId);
+      if (fromIndex === -1 || toIndex === -1) {
+        return prev;
+      }
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  };
+
+  const persistItemPositions = async (items: MenuCategory['items'][number][]) => {
+    if (items.length === 0) return;
+    setItemReorderSaving(true);
+    setItemReorderError('');
+    try {
+      const response = await fetch('/api/menu-items', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          positions: items.map((item, index) => ({ id: item.id, position: index })),
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? 'Unable to reorder items');
+      }
+      router.refresh();
+    } catch (error) {
+      setItemReorderError((error as Error).message);
+    } finally {
+      setItemReorderSaving(false);
+    }
+  };
+
+  const handleItemDragEnd = () => {
+    if (!draggedItemId) return;
+    setDraggedItemId(null);
+    persistItemPositions(orderedItems);
+  };
+
+  const moveItem = (id: string, direction: -1 | 1) => {
+    setOrderedItems((prev) => {
+      const index = prev.findIndex((item) => item.id === id);
+      const targetIndex = index + direction;
+      if (index === -1 || targetIndex < 0 || targetIndex >= prev.length) {
+        return prev;
+      }
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+      persistItemPositions(next);
+      return next;
+    });
+  };
 
   const toggleItemAvailability = async (itemId: string, current: boolean) => {
     setAvailabilityUpdating(itemId);
-    await fetch('/api/menu-items', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ itemId, isAvailable: !current }),
-    });
-    setAvailabilityUpdating(null);
-    router.refresh();
+    try {
+      const response = await fetch('/api/menu-items', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, isAvailable: !current }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setErrorMessage(data.error ?? 'Unable to update availability.');
+      } else {
+        router.refresh();
+      }
+    } catch {
+      setErrorMessage('Network error while updating availability.');
+    } finally {
+      setAvailabilityUpdating(null);
+    }
   };
 
   const handleSave = async () => {
-    if (!draft.name || !draft.categoryId) {
-      setErrorMessage('Please complete the required fields.');
+    setFieldErrors({});
+    setErrorMessage('');
+    const trimmedName = draft.name.trim();
+
+    if (!trimmedName) {
+      setFieldErrors({ name: 'Give this dish a name.' });
+      setErrorMessage('Please name the dish before saving.');
+      itemNameRef.current?.focus();
+      return;
+    }
+    if (!draft.categoryId) {
+      setErrorMessage('Choose a category for this item.');
+      return;
+    }
+    if (!Number.isFinite(draft.price) || draft.price < 0) {
+      setFieldErrors({ price: 'Enter a valid price (use 0 for complimentary items).' });
+      setErrorMessage('Please enter a valid price.');
+      priceInputRef.current?.focus();
       return;
     }
     if (draft.priceMode !== 'fixed' && draft.options.length === 0) {
+      setFieldErrors({ options: 'Add at least one variant for weight/quantity pricing.' });
       setErrorMessage('Add at least one option for weight/quantity pricing.');
       return;
     }
+
     setIsSaving(true);
-    setErrorMessage('');
 
-    const response = await fetch('/api/menu-items' + (editingItemId ? `?id=${editingItemId}` : ''), {
-      method: editingItemId ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        itemId: editingItemId,
-        categoryId: draft.categoryId,
-        name: draft.name,
-        description: draft.description,
-        price: draft.price,
-        priceMode: draft.priceMode,
-        unitLabel: draft.priceMode === 'fixed' ? null : draft.unitLabel,
-        imageUrl: draft.imageUrl,
-        isAvailable: draft.isAvailable,
-        options:
-          draft.priceMode === 'fixed'
-            ? []
-            : draft.options.map((option, index) => ({
-                id: option.id?.startsWith('temp-') ? undefined : option.id,
-                label: option.label,
-                price: option.price,
-                unitLabel: option.unitLabel,
-                position: option.position ?? index,
-              })),
-      }),
-    });
+    try {
+      const response = await fetch('/api/menu-items' + (editingItemId ? `?id=${editingItemId}` : ''), {
+        method: editingItemId ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemId: editingItemId,
+          categoryId: draft.categoryId,
+          name: trimmedName,
+          description: draft.description,
+          price: draft.price,
+          priceMode: draft.priceMode,
+          unitLabel: draft.priceMode === 'fixed' ? null : draft.unitLabel,
+          imageUrl: draft.imageUrl,
+          isAvailable: draft.isAvailable,
+          options:
+            draft.priceMode === 'fixed'
+              ? []
+              : draft.options.map((option, index) => ({
+                  id: option.id?.startsWith('temp-') ? undefined : option.id,
+                  label: option.label,
+                  price: option.price,
+                  unitLabel: option.unitLabel,
+                  position: option.position ?? index,
+                })),
+        }),
+      });
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      setErrorMessage(data.error ?? 'Unable to save item');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setErrorMessage(data.error ?? 'Unable to save item');
+        setIsSaving(false);
+        return;
+      }
+    } catch {
+      setErrorMessage('Network error while saving. Please try again.');
       setIsSaving(false);
       return;
     }
@@ -174,6 +288,7 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
     setIsSaving(false);
     setIsModalOpen(false);
     setEditingItemId(null);
+    setFieldErrors({});
     setDraft(createEmptyDraft());
     router.refresh();
   };
@@ -194,6 +309,8 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
           : item.options?.map((option, index) => ({ ...option, position: option.position ?? index })) ?? [],
     });
     setEditingItemId(item.id);
+    setFieldErrors({});
+    setErrorMessage('');
     setIsModalOpen(false);
     requestAnimationFrame(() => {
       itemNameRef.current?.focus();
@@ -203,8 +320,17 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
 
   const handleDelete = async (itemId: string) => {
     if (!confirm('Delete this menu item?')) return;
-    await fetch(`/api/menu-items?id=${itemId}`, { method: 'DELETE' });
-    router.refresh();
+    try {
+      const response = await fetch(`/api/menu-items?id=${itemId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setErrorMessage(data.error ?? 'Unable to delete menu item.');
+        return;
+      }
+      router.refresh();
+    } catch {
+      setErrorMessage('Network error while deleting. Please try again.');
+    }
   };
 
   return (
@@ -216,21 +342,28 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
             Item name
             <input
               ref={itemNameRef}
-              className="mt-2 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+              className={`mt-2 rounded-xl border px-3 py-2 text-sm focus:ring-1 ${
+                fieldErrors.name ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:border-primary focus:ring-primary'
+              }`}
               value={draft.name}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
               placeholder="Truffle Carbonara"
             />
+            {fieldErrors.name && <span className="mt-1 text-xs text-rose-600">{fieldErrors.name}</span>}
           </label>
           <label className="flex flex-col text-sm font-medium text-slate-700">
             Price (USD)
             <input
               type="number"
-              className="mt-2 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+              ref={priceInputRef}
+              className={`mt-2 rounded-xl border px-3 py-2 text-sm focus:ring-1 ${
+                fieldErrors.price ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:border-primary focus:ring-primary'
+              }`}
               value={draft.price}
               onChange={(e) => setDraft({ ...draft, price: parseFloat(e.target.value) || 0 })}
               placeholder="24"
             />
+            {fieldErrors.price && <span className="mt-1 text-xs text-rose-600">{fieldErrors.price}</span>}
           </label>
         </div>
         <label className="mt-4 block text-sm font-medium text-slate-700">
@@ -262,13 +395,17 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
             <select
               className="mt-2 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               value={draft.priceMode}
-              onChange={(e) =>
+              onChange={(e) => {
+                const nextMode = e.target.value as PriceMode;
                 setDraft((prev) => ({
                   ...prev,
-                  priceMode: e.target.value as (typeof prev)['priceMode'],
-                  options: e.target.value === 'fixed' ? [] : prev.options,
-                }))
-              }
+                  priceMode: nextMode,
+                  options: nextMode === 'fixed' ? [] : prev.options,
+                }));
+                if (nextMode === 'fixed') {
+                  setFieldErrors((prev) => ({ ...prev, options: undefined }));
+                }
+              }}
             >
               <option value="fixed">Fixed price</option>
               <option value="per_weight">Per weight</option>
@@ -379,6 +516,7 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
                 </div>
               ))
             )}
+            {fieldErrors.options && <p className="text-xs text-rose-600">{fieldErrors.options}</p>}
           </div>
         )}
         {!canUploadImages && (
@@ -403,13 +541,15 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
           )}
           <button
             className="rounded-full border border-slate-200 px-6 py-2 text-sm font-semibold text-slate-600"
-            onClick={() => {
-              setDraft(createEmptyDraft());
-              setEditingItemId(null);
-            }}
-          >
-            Clear
-          </button>
+          onClick={() => {
+            setDraft(createEmptyDraft());
+            setEditingItemId(null);
+            setFieldErrors({});
+            setErrorMessage('');
+          }}
+        >
+          Clear
+        </button>
         </div>
       </div>
 
@@ -421,13 +561,25 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
           restaurantId={restaurantId}
           onChange={() => router.refresh()}
         />
+        <p className="mt-4 text-xs text-slate-500">Drag cards to reorder dishes within this category.</p>
         <div className="mt-4 space-y-3">
-          {categories
-            .find((category) => category.id === activeCategory)
-            ?.items.map((item) => (
+          {itemReorderSaving && <InlineSpinner label="Saving item order…" />}
+          {itemReorderError && <p className="text-sm text-rose-600">{itemReorderError}</p>}
+          {orderedItems.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-center text-sm text-slate-500">
+              No items yet. Add a dish using the form above.
+            </p>
+          ) : (
+            orderedItems.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center"
+                className={`flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center ${
+                  draggedItemId === item.id ? 'opacity-50' : ''
+                }`}
+                draggable
+                onDragStart={() => handleItemDragStart(item.id)}
+                onDragOver={(event) => handleItemDragOver(event, item.id)}
+                onDragEnd={handleItemDragEnd}
               >
                 <div className="flex flex-1 flex-col gap-1">
                   <p className="text-sm uppercase tracking-wide text-slate-400">{item.category}</p>
@@ -458,6 +610,24 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
                     {item.unitLabel && item.priceMode !== 'fixed' ? ` · ${item.unitLabel}` : ''}
                   </span>
                   <div className="flex gap-2">
+                    <div className="flex rounded-full border border-slate-200">
+                      <button
+                        type="button"
+                        className="px-2 text-xs text-slate-500 disabled:opacity-50"
+                        onClick={() => moveItem(item.id, -1)}
+                        disabled={orderedItems[0]?.id === item.id || itemReorderSaving}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className="px-2 text-xs text-slate-500 disabled:opacity-50"
+                        onClick={() => moveItem(item.id, 1)}
+                        disabled={orderedItems[orderedItems.length - 1]?.id === item.id || itemReorderSaving}
+                      >
+                        ↓
+                      </button>
+                    </div>
                     <button
                       className={`rounded-full border px-4 py-2 text-sm font-semibold ${
                         item.isAvailable
@@ -490,7 +660,8 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+          )}
         </div>
       </div>
       <EditItemModal

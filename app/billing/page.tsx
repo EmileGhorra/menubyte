@@ -44,13 +44,10 @@ export default async function BillingPage() {
   const expiryLabel = proExpiry ? dateFormatter.format(proExpiry) : null;
   const formatDate = (value: string) => dateFormatter.format(new Date(value));
 
-  const paymentUrl = process.env.NEXT_PUBLIC_WHISH_PAYMENT_URL ?? 'https://whish.money/pay/4FSafql0W';
-  const qrImage = process.env.NEXT_PUBLIC_WHISH_QR_URL ?? undefined;
-
   return (
     <div className="min-h-screen bg-light">
       <Navbar user={session.user} />
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[220px_1fr]">
+      <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[220px_1fr]">
         <Sidebar />
         <div className="space-y-6">
           <div className="rounded-3xl bg-white p-6 shadow-sm">
@@ -138,8 +135,6 @@ export default async function BillingPage() {
               <UpgradeRequestModal
                 amount={PRO_PLAN_PRICE}
                 defaultName={session.user?.name ?? session.user?.email ?? 'MenuByte Owner'}
-                qrImageUrl={qrImage}
-                paymentUrl={paymentUrl}
                 pendingStatus={latestRequest?.status}
               />
             </div>

@@ -10,9 +10,10 @@ interface Props {
   categories: MenuCategory[];
   featuredItems?: MenuItem[];
   isFreePlan: boolean;
+  isFallback?: boolean;
 }
 
-export function PublicMenuClient({ restaurant, categories, featuredItems = [], isFreePlan }: Props) {
+export function PublicMenuClient({ restaurant, categories, featuredItems = [], isFreePlan, isFallback }: Props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -47,6 +48,12 @@ export function PublicMenuClient({ restaurant, categories, featuredItems = [], i
 
   return (
     <div className="flex-1 space-y-10">
+      {isFallback && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          <p className="font-semibold">Preview menu</p>
+          <p>This content is based on the default MenuByte sample until the owner publishes their live dishes.</p>
+        </div>
+      )}
       <div className="sticky top-4 z-10 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur">
         <label className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
           Search menu

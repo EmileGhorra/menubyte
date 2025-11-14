@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface AdminUpgradeRequest {
@@ -22,20 +22,49 @@ interface Props {
 export function AdminUpgradeRequestsTable({ requests }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
+  const [actionState, setActionState] = useState<{ id: string; action: 'approve' | 'reject' } | null>(null);
 
   const review = (id: string, action: 'approve' | 'reject') => {
+    setFeedback(null);
+    setActionState({ id, action });
     startTransition(async () => {
-      await fetch('/api/upgrade-requests', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, action }),
-      });
-      router.refresh();
+      try {
+        const response = await fetch('/api/upgrade-requests', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, action }),
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error ?? 'Unable to process request.');
+        }
+        setFeedback({
+          tone: 'success',
+          text: action === 'approve' ? 'Request approved and wallet updated.' : 'Request marked as rejected.',
+        });
+        router.refresh();
+      } catch (error) {
+        setFeedback({ tone: 'error', text: (error as Error).message });
+      } finally {
+        setActionState(null);
+      }
     });
   };
 
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      {feedback && (
+        <div
+          className={`border-b px-4 py-3 text-sm ${
+            feedback.tone === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              : 'border-rose-200 bg-rose-50 text-rose-700'
+          }`}
+        >
+          {feedback.text}
+        </div>
+      )}
       <table className="w-full text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
@@ -88,18 +117,22 @@ export function AdminUpgradeRequestsTable({ requests }: Props) {
               <td className="px-4 py-3 text-right">
                 <div className="inline-flex gap-2">
                   <button
-                    disabled={isPending || request.status !== 'pending'}
+                    disabled={
+                      isPending || request.status !== 'pending' || actionState?.action === 'reject' || Boolean(actionState?.id && actionState.id !== request.id)
+                    }
                     onClick={() => review(request.id, 'approve')}
                     className="rounded-full border border-emerald-500 px-3 py-1 text-xs font-semibold text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Approve
+                    {actionState?.id === request.id && actionState.action === 'approve' ? 'Approving…' : 'Approve'}
                   </button>
                   <button
-                    disabled={isPending || request.status !== 'pending'}
+                    disabled={
+                      isPending || request.status !== 'pending' || actionState?.action === 'approve' || Boolean(actionState?.id && actionState.id !== request.id)
+                    }
                     onClick={() => review(request.id, 'reject')}
                     className="rounded-full border border-rose-500 px-3 py-1 text-xs font-semibold text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Reject
+                    {actionState?.id === request.id && actionState.action === 'reject' ? 'Rejecting…' : 'Reject'}
                   </button>
                 </div>
               </td>

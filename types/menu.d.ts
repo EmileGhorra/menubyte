@@ -46,6 +46,7 @@ export interface RestaurantMenu {
   restaurant: RestaurantProfile;
   categories: MenuCategory[];
   featuredItems?: MenuItem[];
+  isFallback?: boolean;
 }
 
 export interface SubscriptionPlan {

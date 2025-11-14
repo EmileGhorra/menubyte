@@ -24,7 +24,11 @@ export function SelfUpgradeButton({ disabled, isPro }: Props) {
       }
       router.refresh();
     } catch (err) {
-      setError((err as Error).message);
+      setError(
+        (err as Error).message.includes('Insufficient')
+          ? 'Not enough balance to extend Pro. Top up via WhatsApp and try again.'
+          : (err as Error).message
+      );
     } finally {
       setIsSubmitting(false);
     }

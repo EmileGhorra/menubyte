@@ -7,18 +7,19 @@ import { useRouter } from 'next/navigation';
 interface Props {
   amount: number;
   defaultName: string;
-  qrImageUrl?: string;
-  paymentUrl: string;
   pendingStatus?: 'pending' | 'approved' | 'rejected';
 }
 
-const QR_FALLBACK_BASE = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '81605898';
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}`;
+const WHATSAPP_BUTTON_SRC = '/assets/whatsapp-button.png';
 
-export function UpgradeRequestModal({ amount, defaultName, qrImageUrl, paymentUrl, pendingStatus }: Props) {
+export function UpgradeRequestModal({ amount, defaultName, pendingStatus }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState(defaultName);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState('');
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
@@ -27,13 +28,19 @@ export function UpgradeRequestModal({ amount, defaultName, qrImageUrl, paymentUr
   }, [defaultName]);
 
   const handleSubmit = async () => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setNameError('Please enter the name that appears on the Whish transfer.');
+      return;
+    }
     setSubmitting(true);
     setError(null);
+    setNameError('');
     try {
       const response = await fetch('/api/upgrade-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: name }),
+        body: JSON.stringify({ displayName: trimmedName }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
@@ -48,12 +55,17 @@ export function UpgradeRequestModal({ amount, defaultName, qrImageUrl, paymentUr
     }
   };
 
-  const buttonLabel = success || pendingStatus === 'pending' ? 'Pending approval' : 'Add funds via Whish';
+  const buttonLabel = success || pendingStatus === 'pending' ? 'Pending approval' : 'Add funds';
 
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true);
+          setSuccess(false);
+          setError(null);
+          setNameError('');
+        }}
         disabled={pendingStatus === 'pending'}
         className="rounded-2xl bg-dark px-4 py-2 text-sm font-semibold text-white hover:bg-dark/90 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
@@ -65,35 +77,40 @@ export function UpgradeRequestModal({ amount, defaultName, qrImageUrl, paymentUr
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm uppercase tracking-wide text-slate-400">Upgrade request</p>
-                <h2 className="text-2xl font-semibold text-dark">Pay with Whish</h2>
+                <h2 className="text-2xl font-semibold text-dark">Confirm your payment</h2>
                 <p className="text-sm text-slate-500">
-                  Scan the QR, send ${amount}, then submit this request. We’ll credit your wallet and keep your Pro plan in sync.
+                  Send ${amount} via Whish, then submit this request and message us on WhatsApp with your receipt. We&apos;ll match the payment
+                  and credit your wallet.
                 </p>
               </div>
-              <button className="text-slate-400 hover:text-dark" onClick={() => setIsOpen(false)}>
+              <button
+                className="text-slate-400 hover:text-dark"
+                onClick={() => {
+                  setIsOpen(false);
+                  setError(null);
+                  setNameError('');
+                  setSuccess(false);
+                }}
+              >
                 ✕
               </button>
             </div>
             <div className="mt-6 grid gap-6 md:grid-cols-2">
-              <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-center">
-                <Image
-                  src={
-                    qrImageUrl ||
-                    `${QR_FALLBACK_BASE}${encodeURIComponent(paymentUrl)}`
-                  }
-                  alt="Whish QR code"
-                  width={220}
-                  height={220}
-                  className="mx-auto rounded-2xl"
-                />
-                <p className="mt-3 text-sm text-slate-500">Whish QR • include your name in the note</p>
-                <a
-                  href={paymentUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex items-center justify-center rounded-full bg-dark px-4 py-2 text-xs font-semibold text-white hover:bg-dark/90"
-                >
-                  Open Whish link
+              <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-600">
+                <p className="text-sm font-semibold text-dark">Steps</p>
+                <ol className="mt-3 space-y-2 text-sm">
+                  <li>1. Pay ${amount} via Whish.</li>
+                  <li>2. Tap the WhatsApp button below and share your receipt + restaurant name.</li>
+                  <li>3. Submit this request so we can verify and add the funds.</li>
+                </ol>
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="mt-4 inline-block">
+                  <Image
+                    src={WHATSAPP_BUTTON_SRC}
+                    alt={`Chat with us on WhatsApp (${WHATSAPP_NUMBER})`}
+                    width={220}
+                    height={70}
+                    className="h-auto w-44 md:w-56"
+                  />
                 </a>
               </div>
               <div className="space-y-4">
@@ -106,10 +123,16 @@ export function UpgradeRequestModal({ amount, defaultName, qrImageUrl, paymentUr
                   Account name
                   <input
                     value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      if (nameError) setNameError('');
+                    }}
+                    className={`mt-1 w-full rounded-2xl border px-3 py-2 text-sm focus:ring-1 ${
+                      nameError ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:border-primary focus:ring-primary'
+                    }`}
                     placeholder="Restaurant or owner name"
                   />
+                  {nameError && <span className="text-xs text-rose-600">{nameError}</span>}
                 </label>
                 <button
                   onClick={handleSubmit}
@@ -121,7 +144,7 @@ export function UpgradeRequestModal({ amount, defaultName, qrImageUrl, paymentUr
                 {error && <p className="text-sm text-rose-600">{error}</p>}
                 {(success || pendingStatus === 'pending') && (
                   <p className="text-sm text-amber-600">
-                    We received your request. You’ll get an email once it’s approved.
+                    We received your request—make sure you reached out on WhatsApp so we can confirm the transfer quickly.
                   </p>
                 )}
               </div>
