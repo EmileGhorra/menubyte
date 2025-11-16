@@ -92,7 +92,7 @@ const transformRestaurant = (row: any, options?: { fallback?: boolean }) => {
       phone: row.phone ?? '',
       plan: planTier,
       qrCodeUrl: row.qr_slug
-        ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.vercel.app'}/menus/${row.qr_slug}`
+        ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.e-nova.dev'}/menus/${row.qr_slug}`
         : undefined,
     },
     categories,
@@ -218,7 +218,7 @@ export async function getAllRestaurants() {
     phone: row.phone ?? '',
     plan: (row.plan_tier as PlanTier) ?? 'free',
     qrCodeUrl: row.qr_slug
-      ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.vercel.app'}/menus/${row.qr_slug}`
+      ? `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.e-nova.dev'}/menus/${row.qr_slug}`
       : undefined,
   }));
 }

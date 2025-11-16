@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function QRGenerator({ slug, title = 'Your public menu', allowDownload = true }: Props) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.e-nova.dev';
   const menuUrl = `${baseUrl}/menus/${slug}`;
   const qrUrl = buildQrUrl(menuUrl);
 

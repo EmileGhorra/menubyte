@@ -50,10 +50,10 @@ export default async function HomePage() {
                 Create your menu
               </Link>
               <Link
-                href="/login"
+                href="https://menubyte.e-nova.dev/menus/atlas-demo"
                 className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-300"
               >
-                View demo dashboard
+                View demo menu
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 sm:grid-cols-4">
@@ -166,10 +166,10 @@ export default async function HomePage() {
                 Start free
               </Link>
               <Link
-                href="/login"
+                href="https://menubyte.e-nova.dev/menus/atlas-demo"
                 className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-300"
               >
-                Try the demo data
+                Try the demo menu
               </Link>
             </div>
           </div>
