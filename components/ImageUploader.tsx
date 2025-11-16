@@ -10,9 +10,9 @@ interface Props {
 }
 
 const placeholders = [
-  'https://images.unsplash.com/photo-1525755662778-989d0524087e',
-  'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
-  'https://images.unsplash.com/photo-1478145046317-39f10e56b5e9',
+  '/assets/demo/dish9.png',
+  '/assets/demo/dish6.png',
+  '/assets/demo/dish4.png',
 ];
 
 export function ImageUploader({ value, onChange, disabled = false }: Props) {

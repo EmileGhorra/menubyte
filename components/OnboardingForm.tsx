@@ -96,7 +96,7 @@ export function OnboardingForm() {
           className="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary"
           value={form.heroImage}
           onChange={handleChange('heroImage')}
-          placeholder="https://images.unsplash.com/..."
+          placeholder="/assets/demo/dish1.png"
         />
       </div>
       <div>

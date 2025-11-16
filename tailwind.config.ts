@@ -9,9 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#4F46E5',
-        secondary: '#0EA5E9',
-        accent: '#F59E0B',
+        primary: '#23343C', // dark teal/graphite from logo
+        secondary: '#2F4B59', // softened teal for gradients
+        accent: '#F59E0B', // warm amber accent for highlights
         dark: '#0F172A',
         light: '#F8FAFC',
       },

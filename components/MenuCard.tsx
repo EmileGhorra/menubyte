@@ -1,5 +1,8 @@
+ 'use client';
+
 import Image from 'next/image';
 import type { MenuItem } from '@/types/menu';
+import { useState } from 'react';
 
 interface Props {
   item: MenuItem;
@@ -7,17 +10,20 @@ interface Props {
 
 export function MenuCard({ item }: Props) {
   const hasImage = Boolean(item.imageUrl);
+  const [imgSrc, setImgSrc] = useState(item.imageUrl || '/assets/demo/dish1.png');
 
   return (
     <article className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
       {hasImage && (
         <div className="relative h-40 w-full overflow-hidden rounded-t-2xl">
           <Image
-            src={item.imageUrl as string}
+            src={imgSrc as string}
             alt={item.name}
             fill
             className="object-cover"
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            unoptimized
+            onError={() => setImgSrc('/assets/demo/dish1.png')}
           />
           <span className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-dark">
             ${item.price.toFixed(2)}

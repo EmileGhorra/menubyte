@@ -9,6 +9,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleChange = (field: keyof typeof form) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -39,12 +40,36 @@ export default function SignupPage() {
     });
   };
 
+  const handleGoogleSignup = async () => {
+    try {
+      setIsGoogleLoading(true);
+      await signIn('google', { callbackUrl: '/dashboard' });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-light to-secondary/10 px-4">
       <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl">
         <p className="text-sm uppercase tracking-wide text-slate-400">Start free</p>
         <h1 className="text-3xl font-semibold text-dark">Create your MenuByte account</h1>
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <div className="mt-6 space-y-4">
+          <button
+            type="button"
+            onClick={handleGoogleSignup}
+            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? 'Connecting…' : 'Continue with Google'}
+          </button>
+          <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-slate-400">
+            <span className="h-px flex-1 bg-slate-200" />
+            or email
+            <span className="h-px flex-1 bg-slate-200" />
+          </div>
+        </div>
+        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-slate-700">
             Full name
             <input
