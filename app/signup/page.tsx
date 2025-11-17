@@ -72,6 +72,11 @@ export default function SignupPage() {
           >
             {isGoogleLoading ? 'Connecting…' : 'Continue with Google'}
           </button>
+          {!form.agreed && (
+            <p className="text-xs text-amber-600">
+              Please accept the Terms of Service and Privacy Policy below to enable Google signup.
+            </p>
+          )}
           <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-slate-400">
             <span className="h-px flex-1 bg-slate-200" />
             or email
