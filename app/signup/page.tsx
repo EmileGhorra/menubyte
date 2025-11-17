@@ -6,17 +6,22 @@ import { signIn } from 'next-auth/react';
 
 export default function SignupPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', agreed: false });
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [error, setError] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleChange = (field: keyof typeof form) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    const value = field === 'agreed' ? event.target.checked : event.target.value;
+    setForm((prev) => ({ ...prev, [field]: value } as typeof prev));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!form.agreed) {
+      setError('Please agree to the Terms and Privacy Policy to continue.');
+      return;
+    }
     setStatus('loading');
     setError('');
 
@@ -90,17 +95,37 @@ export default function SignupPage() {
               onChange={handleChange('email')}
             />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
-            Password
-            <input
-              type="password"
-              required
-              minLength={8}
-              className="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary"
-              value={form.password}
-              onChange={handleChange('password')}
-            />
-          </label>
+            <label className="block text-sm font-medium text-slate-700">
+              Password
+              <input
+                type="password"
+                required
+                minLength={8}
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary"
+                value={form.password}
+                onChange={handleChange('password')}
+              />
+            </label>
+            <label className="flex items-start gap-2 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                checked={form.agreed}
+                onChange={handleChange('agreed')}
+                required
+              />
+              <span className="text-xs font-normal text-slate-600">
+                I agree to the{' '}
+                <a href="/legal/terms" className="font-semibold text-primary hover:text-secondary" target="_blank" rel="noreferrer">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/legal/privacy" className="font-semibold text-primary hover:text-secondary" target="_blank" rel="noreferrer">
+                  Privacy Policy
+                </a>
+                .
+              </span>
+            </label>
           {error && <p className="text-sm text-rose-600">{error}</p>}
           <button
             type="submit"
