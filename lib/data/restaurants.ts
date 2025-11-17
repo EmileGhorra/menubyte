@@ -164,7 +164,7 @@ export async function getRestaurantMenuBySlug(slug: string) {
 
 export async function getPrimaryRestaurantForUser(userId?: string) {
   if (!userId || !supabaseServer) {
-    return menuData[0];
+    return null;
   }
   await ensurePlanStatus(userId);
 
@@ -181,11 +181,11 @@ export async function getPrimaryRestaurantForUser(userId?: string) {
 
   if (error) {
     console.warn('[supabase] getPrimaryRestaurantForUser fallback', error.message);
-    return { ...menuData[0], isFallback: true };
+    return null;
   }
 
   if (!data) {
-    return { ...menuData[0], isFallback: true };
+    return null;
   }
 
   return transformRestaurant(data);

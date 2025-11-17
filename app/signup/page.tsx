@@ -41,7 +41,7 @@ export default function SignupPage() {
     await signIn('credentials', {
       email: form.email,
       password: form.password,
-      callbackUrl: '/dashboard',
+      callbackUrl: '/onboarding',
     });
   };
 
@@ -52,7 +52,7 @@ export default function SignupPage() {
     }
     try {
       setIsGoogleLoading(true);
-      await signIn('google', { callbackUrl: '/dashboard' });
+      await signIn('google', { callbackUrl: '/onboarding' });
     } finally {
       setIsGoogleLoading(false);
     }
