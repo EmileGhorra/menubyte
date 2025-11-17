@@ -6,7 +6,7 @@ export const metadata = {
 
 const contactBlocks = [
   { label: 'Email', value: 'contact@e-novo.dev', href: 'mailto:contact@e-novo.dev' },
-  { label: 'WhatsApp', value: '+961 81608598', href: 'https://wa.me/96181608598' },
+  { label: 'WhatsApp', value: '+961 81605898', href: 'https://wa.me/96181605898' },
   { label: 'Instagram', value: '@enova.dev', href: 'https://www.instagram.com/enova.dev' },
 ];
 

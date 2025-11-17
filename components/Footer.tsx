@@ -9,8 +9,8 @@ const links = [
 const contactLinks = [
   { href: 'mailto:contact@e-novo.dev', label: 'contact@e-novo.dev', icon: null },
   {
-    href: 'https://wa.me/96181608598',
-    label: '+961 81608598',
+    href: 'https://wa.me/96181605898',
+    label: '+961 81605898',
     icon: (
       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/90 text-[10px] font-bold text-white">
         WA
