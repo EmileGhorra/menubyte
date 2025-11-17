@@ -7,9 +7,25 @@ const links = [
 ];
 
 const contactLinks = [
-  { href: 'mailto:contact@e-novo.dev', label: 'contact@e-novo.dev' },
-  { href: 'https://wa.me/96181608598', label: 'WhatsApp: +961 81608598' },
-  { href: 'https://www.instagram.com/enova.dev', label: 'Instagram: @enova.dev' },
+  { href: 'mailto:contact@e-novo.dev', label: 'contact@e-novo.dev', icon: null },
+  {
+    href: 'https://wa.me/96181608598',
+    label: '+961 81608598',
+    icon: (
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/90 text-[10px] font-bold text-white">
+        WA
+      </span>
+    ),
+  },
+  {
+    href: 'https://www.instagram.com/enova.dev',
+    label: '@enova.dev',
+    icon: (
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-orange-400 text-[10px] font-bold text-white">
+        IG
+      </span>
+    ),
+  },
 ];
 
 export function Footer() {
@@ -26,8 +42,13 @@ export function Footer() {
         </div>
         <div className="flex flex-wrap gap-3 text-xs sm:justify-end">
           {contactLinks.map((contact) => (
-            <Link key={contact.href} href={contact.href} className="hover:text-primary">
-              {contact.label}
+            <Link
+              key={contact.href}
+              href={contact.href}
+              className="flex items-center gap-2 hover:text-primary"
+            >
+              {contact.icon}
+              <span>{contact.label}</span>
             </Link>
           ))}
         </div>
