@@ -46,6 +46,10 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
+    if (!form.agreed) {
+      setError('Please agree to the Terms and Privacy Policy to continue.');
+      return;
+    }
     try {
       setIsGoogleLoading(true);
       await signIn('google', { callbackUrl: '/dashboard' });
@@ -64,7 +68,7 @@ export default function SignupPage() {
             type="button"
             onClick={handleGoogleSignup}
             className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            disabled={isGoogleLoading}
+            disabled={isGoogleLoading || !form.agreed}
           >
             {isGoogleLoading ? 'Connecting…' : 'Continue with Google'}
           </button>
