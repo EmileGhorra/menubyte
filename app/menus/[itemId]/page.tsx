@@ -57,8 +57,8 @@ export default async function PublicMenuPage({ params }: PageProps) {
             </div>
           )}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
-            <p className="font-semibold text-dark">Questions?</p>
-            <p>{restaurant.phone}</p>
+            <p className="font-semibold text-dark">Need help with your order?</p>
+            <p>Call us at {restaurant.phone}</p>
           </div>
           {isFallback && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">

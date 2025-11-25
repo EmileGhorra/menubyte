@@ -19,7 +19,6 @@ export default async function DashboardPage() {
   }
   const stats = [
     { label: 'Items', value: currentRestaurant.categories.reduce((acc, cat) => acc + cat.items.length, 0).toString() },
-    { label: 'Scans this week', value: '248' },
     { label: 'Active plan', value: currentRestaurant.restaurant.plan === 'pro' ? 'Pro' : 'Free' },
   ];
   const firstName = session.user?.name?.split(' ')[0] ?? 'Chef';
