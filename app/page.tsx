@@ -66,8 +66,8 @@ export default async function HomePage() {
                 <p className="text-xs uppercase tracking-wide text-slate-500">Manual top-ups</p>
               </div>
               <div>
-                <p className="text-2xl font-semibold text-dark">Admin</p>
-                <p className="text-xs uppercase tracking-wide text-slate-500">Approve requests</p>
+                <p className="text-2xl font-semibold text-dark">Alerts</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Upgrade statuses</p>
               </div>
               <div>
                 <p className="text-2xl font-semibold text-dark">QR ready</p>
