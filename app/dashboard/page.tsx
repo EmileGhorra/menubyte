@@ -5,7 +5,7 @@ import { MenuCard } from '@/components/MenuCard';
 import { QRGenerator } from '@/components/QRGenerator';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { getPrimaryRestaurantForUser } from '@/lib/data/restaurants';
+import { getPrimaryRestaurantForUser, getRestaurantScanCount } from '@/lib/data/restaurants';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -17,8 +17,10 @@ export default async function DashboardPage() {
   if (!currentRestaurant) {
     redirect('/onboarding');
   }
+  const scanCount = await getRestaurantScanCount(currentRestaurant.restaurant.id);
   const stats = [
     { label: 'Items', value: currentRestaurant.categories.reduce((acc, cat) => acc + cat.items.length, 0).toString() },
+    { label: 'Total scans', value: scanCount.toString() },
     { label: 'Active plan', value: currentRestaurant.restaurant.plan === 'pro' ? 'Pro' : 'Free' },
   ];
   const firstName = session.user?.name?.split(' ')[0] ?? 'Chef';

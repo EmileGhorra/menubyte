@@ -159,6 +159,13 @@ export async function getRestaurantMenuBySlug(slug: string) {
     }
   }
 
+  // Increment scan count for this restaurant (best-effort).
+  if (data?.id) {
+    supabaseServer.rpc('increment_scan', { restaurant_uuid: data.id }).catch((err) => {
+      console.warn('[supabase] increment_scan failed', err?.message);
+    });
+  }
+
   return data ? transformRestaurant(data) : getFallbackRestaurantMenu(slug);
 }
 
@@ -189,6 +196,16 @@ export async function getPrimaryRestaurantForUser(userId?: string) {
   }
 
   return transformRestaurant(data);
+}
+
+export async function getRestaurantScanCount(restaurantId: string) {
+  if (!supabaseServer) return 0;
+  const { data } = await supabaseServer
+    .from('restaurant_scans')
+    .select('total')
+    .eq('restaurant_id', restaurantId)
+    .maybeSingle();
+  return data?.total ?? 0;
 }
 
 export async function getAllRestaurants() {
