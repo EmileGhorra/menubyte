@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 import { Footer } from '@/components/Footer';
+import { Analytics } from '@vercel/analytics/react';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://menubyte.e-nova.dev';
 const title = 'MenuByte | QR Menu Generator for Restaurants';
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
+        <Analytics />
       </body>
     </html>
   );
