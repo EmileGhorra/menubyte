@@ -161,9 +161,11 @@ export async function getRestaurantMenuBySlug(slug: string) {
 
   // Increment scan count for this restaurant (best-effort).
   if (data?.id) {
-    supabaseServer.rpc('increment_scan', { restaurant_uuid: data.id }).catch((err) => {
+    try {
+      await supabaseServer.rpc('increment_scan', { restaurant_uuid: data.id });
+    } catch (err: any) {
       console.warn('[supabase] increment_scan failed', err?.message);
-    });
+    }
   }
 
   return data ? transformRestaurant(data) : getFallbackRestaurantMenu(slug);
