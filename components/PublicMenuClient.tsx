@@ -117,15 +117,7 @@ export function PublicMenuClient({ restaurant, categories, featuredItems = [], i
             className="space-y-6"
           >
             <MenuCategoryBlock category={category} />
-            {isFreePlan && (
-              <div className="rounded-2xl border border-dashed border-amber-300 bg-white/90 p-6 text-center shadow-sm">
-                <p className="text-xs uppercase tracking-wide text-amber-500">Sponsored</p>
-                <p className="mt-1 text-lg font-semibold text-dark">Upgrade to MenuByte Pro</p>
-                <p className="text-sm text-slate-500">
-                  Remove ads, add unlimited dishes, and upload your own photography.
-                </p>
-              </div>
-            )}
+            {/* Free plan notice intentionally removed; ads/upgrade promos deferred for future work. */}
           </div>
         ))
       )}

@@ -53,7 +53,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
           {isFreePlan && (
             <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 text-sm text-amber-700">
               <p className="font-semibold">MenuByte Free Plan</p>
-              <p className="text-amber-600">Guests may see ads until you upgrade.</p>
+              <p className="text-amber-600">Some features are limited until you upgrade.</p>
             </div>
           )}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">

@@ -62,7 +62,7 @@ export default async function BillingPage() {
                     ? proExpiry
                       ? `Active until ${expiryLabel}`
                       : 'Pro benefits active'
-                    : 'Free plan with ads'}
+                    : 'Free plan active'}
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-200 p-4">
@@ -166,11 +166,11 @@ export default async function BillingPage() {
                   ${plan.pricePerMonth}
                   <span className="text-base font-normal text-slate-500"> /mo</span>
                 </h2>
-                {plan.id === 'free' ? (
-                  <p className="text-sm font-medium text-amber-600">Includes MenuByte ads</p>
-                ) : (
-                  <p className="text-sm font-medium text-emerald-600">No ads + unlimited items</p>
-                )}
+                  {plan.id === 'free' ? (
+                    <p className="text-sm font-medium text-amber-600">Starter features</p>
+                  ) : (
+                    <p className="text-sm font-medium text-emerald-600">Unlock full features</p>
+                  )}
                 <ul className="mt-4 flex flex-1 flex-col gap-2 text-sm text-slate-600">
                   {plan.features.map((feature) => (
                     <li key={feature} className="rounded-xl bg-light px-3 py-2">

@@ -172,13 +172,6 @@ export default async function HomePage() {
           <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-light p-4">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/10 to-transparent" />
             <div className="relative grid gap-3 text-sm text-slate-600">
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Approve / Reject</p>
-                  <p className="text-sm font-semibold text-dark">Upgrade requests</p>
-                </div>
-                <span className="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-semibold text-amber-700">Pending</span>
-              </div>
               <div className="rounded-xl border border-slate-200 bg-white p-3">
                 <p className="text-xs uppercase tracking-wide text-slate-500">Menu editing</p>
                 <p className="text-sm text-slate-600">Reorder categories and items; uploads unlocked on Pro.</p>

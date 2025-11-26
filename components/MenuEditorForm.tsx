@@ -521,7 +521,7 @@ const updateOption = (optionId: string, index: number, field: 'label' | 'price' 
         )}
         {!canUploadImages && (
           <p className="mt-2 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
-            Image uploads are available on the Pro plan. Upgrade in Billing to unlock photos and remove ads.
+            Image uploads are available on the Pro plan.
           </p>
         )}
         <div className="mt-6 flex flex-wrap gap-3">
