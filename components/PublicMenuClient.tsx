@@ -17,6 +17,7 @@ export function PublicMenuClient({ restaurant, categories, featuredItems = [], i
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const hasAnyItems = categories.some((category) => category.items.length > 0);
 
   const filteredCategories = useMemo(() => {
     if (!searchTerm.trim()) return categories;
@@ -105,7 +106,11 @@ export function PublicMenuClient({ restaurant, categories, featuredItems = [], i
 
       {noResults ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-          No dishes match &ldquo;{searchTerm}&rdquo;. Try adjusting your search.
+          {hasAnyItems ? (
+            <>No dishes match &ldquo;{searchTerm}&rdquo;. Try adjusting your search.</>
+          ) : (
+            <>No dishes have been added yet. Please check back soon.</>
+          )}
         </div>
       ) : (
         displayedCategories.map((category) => (
