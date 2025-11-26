@@ -3,13 +3,17 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getRestaurantMenuBySlug } from '@/lib/data/restaurants';
 import { PublicMenuClient } from '@/components/PublicMenuClient';
+import { auth } from '@/auth';
 
 type Params = { itemId: string };
 type PageProps = { params: Params | Promise<Params> };
 
 export default async function PublicMenuPage({ params }: PageProps) {
   const resolvedParams = typeof (params as any)?.then === 'function' ? await params : (params as Params);
-  const restaurantEntry = await getRestaurantMenuBySlug(resolvedParams.itemId);
+  const session = await auth();
+  const restaurantEntry = await getRestaurantMenuBySlug(resolvedParams.itemId, {
+    viewerUserId: session?.user?.id,
+  });
 
   if (!restaurantEntry) {
     notFound();

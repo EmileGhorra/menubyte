@@ -114,7 +114,10 @@ const getFallbackRestaurantMenu = (slug: string) => {
   };
 };
 
-export async function getRestaurantMenuBySlug(slug: string) {
+export async function getRestaurantMenuBySlug(
+  slug: string,
+  options?: { skipIncrement?: boolean; viewerUserId?: string }
+) {
   if (!supabaseServer) {
     return getStaticRestaurant(slug) ?? null;
   }
@@ -160,7 +163,8 @@ export async function getRestaurantMenuBySlug(slug: string) {
   }
 
   // Increment scan count for this restaurant (best-effort).
-  if (data?.id) {
+  const isOwnerViewing = options?.viewerUserId && data?.owner_id === options.viewerUserId;
+  if (data?.id && !options?.skipIncrement && !isOwnerViewing) {
     try {
       await supabaseServer.rpc('increment_scan', { restaurant_uuid: data.id });
     } catch (err: any) {
