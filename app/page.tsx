@@ -33,14 +33,14 @@ export default async function HomePage() {
         <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="space-y-6">
             <p className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 shadow-sm">
-              QR menus • Wallet billing • Admin approvals
+              QR menus • Mobile friendly • Easy updates
             </p>
             <h1 className="text-4xl font-bold leading-tight sm:text-5xl text-dark">
-              Launch smart QR menus with wallet-based billing and admin control.
+              Launch a beautiful QR menu your guests love.
             </h1>
             <p className="text-lg text-slate-600">
-              MenuByte gives you editable QR menus, wallet-based top-ups, and a built-in approval workflow so
-              you stay in control—without external gateways.
+              MenuByte gives you editable QR menus, mobile-first layouts, and effortless sharing so you can focus on
+              serving guests.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -59,15 +59,15 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 sm:grid-cols-4">
               <div>
                 <p className="text-2xl font-semibold text-dark">20 items</p>
-                <p className="text-xs uppercase tracking-wide text-slate-500">Free tier capacity</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Starter limit</p>
               </div>
               <div>
-                <p className="text-2xl font-semibold text-dark">Wallet first</p>
-                <p className="text-xs uppercase tracking-wide text-slate-500">Manual top-ups</p>
+                <p className="text-2xl font-semibold text-dark">Mobile ready</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">No pinching/zooming</p>
               </div>
               <div>
-                <p className="text-2xl font-semibold text-dark">Alerts</p>
-                <p className="text-xs uppercase tracking-wide text-slate-500">Upgrade statuses</p>
+                <p className="text-2xl font-semibold text-dark">Live edits</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Instant updates</p>
               </div>
               <div>
                 <p className="text-2xl font-semibold text-dark">QR ready</p>
@@ -87,25 +87,21 @@ export default async function HomePage() {
                     <p className="text-xs text-slate-500">Beirut Waterfront</p>
                   </div>
                 </div>
-                <div className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-700">Pro</div>
+                <div className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary">Live</div>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-slate-100 bg-white p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Wallet balance</p>
-                  <p className="text-xl font-semibold text-dark">$120.00</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Categories</p>
+                  <p className="text-xl font-semibold text-dark">6</p>
                 </div>
                 <div className="rounded-xl border border-slate-100 bg-white p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Upgrade cost</p>
-                  <p className="text-xl font-semibold text-dark">$10</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Items</p>
+                  <p className="text-xl font-semibold text-dark">38</p>
                 </div>
                 <div className="rounded-xl border border-slate-100 bg-white p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Status</p>
-                  <p className="text-xl font-semibold text-dark">Active</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Theme</p>
+                  <p className="text-xl font-semibold text-dark">Light</p>
                 </div>
-              </div>
-              <div className="rounded-xl border border-slate-100 bg-white p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Pending approvals</p>
-                <p className="text-sm text-slate-600">Review payment proofs, approve, auto-downgrade on expiry.</p>
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <button className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-md shadow-primary/20">
@@ -121,9 +117,9 @@ export default async function HomePage() {
 
         <section className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-xl ring-1 ring-slate-100 sm:grid-cols-3">
           <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Wallet-first workflow</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Fast setup</p>
             <p className="text-sm text-slate-600">
-              Guests pay, you approve in the admin table, funds land in the wallet, and Pro activates automatically.
+              Create a menu in minutes with categories, prices, and photos. QR codes update as you edit.
             </p>
           </div>
           <div className="space-y-2">
@@ -135,7 +131,7 @@ export default async function HomePage() {
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Smart limits</p>
             <p className="text-sm text-slate-600">
-              Free plans show up to 20 items; auto-downgrade when Pro expires; photos stay gated to Pro.
+              Free plans show up to 20 items; add photos and unlimited items when you need to grow.
             </p>
           </div>
         </section>
@@ -143,19 +139,19 @@ export default async function HomePage() {
         <section className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-xl ring-1 ring-slate-100 lg:grid-cols-2">
           <div className="space-y-3">
             <p className="text-sm uppercase tracking-wide text-slate-500">How it works</p>
-            <h2 className="text-3xl font-semibold text-dark">From QR to approval in minutes</h2>
+            <h2 className="text-3xl font-semibold text-dark">From QR to menu in minutes</h2>
             <ol className="space-y-3 text-slate-600">
               <li className="flex gap-3">
                 <span className="mt-1 h-6 w-6 rounded-full bg-primary/10 text-center text-sm font-semibold text-primary">1</span>
-                Generate a QR linked to `/menus/slug`—public guests see your live menu instantly.
+                Generate a QR linked to `/menus/slug` so guests always see your live menu.
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 h-6 w-6 rounded-full bg-primary/10 text-center text-sm font-semibold text-primary">2</span>
-                Guests pay you directly; you receive their upgrade request in the admin table.
+                Add categories and dishes; reorder and edit anytime from your dashboard.
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 h-6 w-6 rounded-full bg-primary/10 text-center text-sm font-semibold text-primary">3</span>
-                Approve to credit the wallet and activate Pro; automatic expiry downgrades keep limits enforced.
+                Share or print the QR—changes go live instantly for your guests.
               </li>
             </ol>
             <div className="flex flex-wrap gap-3">

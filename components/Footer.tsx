@@ -7,7 +7,7 @@ const links = [
 ];
 
 const contactLinks = [
-  { href: 'mailto:contact@e-novo.dev', label: 'contact@e-novo.dev', icon: null },
+  { href: 'mailto:contact@e-nova.dev', label: 'contact@e-nova.dev', icon: null },
   {
     href: 'https://wa.me/96181605898',
     label: '+961 81605898',
